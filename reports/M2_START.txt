@@ -1,0 +1,138 @@
+M2 — BẮT ĐẦU BASELINE VÀ GOLD SET
+================================
+
+1. ĐÚNG CHECKOUT
+
+Repo: https://github.com/HieuGit05/K5-L2B-DAY06-T05
+Thư mục làm việc: checkout riêng của repo mới, nhánh M2.
+Nhánh: m2/baseline-gold
+
+Mở thư mục này trong VS Code. Không sửa baseline trong thư mục day06 cũ:
+bản đó dùng contract/pipeline khác của kế hoạch cũ.
+Môi trường Python 3.13 đã cài riêng trong .venv.
+
+# cd vào checkout repo mới trên máy của bạn trước khi chạy:
+source .venv/bin/activate
+
+2. PHẦN ĐÃ CHUẨN BỊ CHO BẠN
+
+- src/t05_baseline.py có baseline random và exact SHA-256, đúng t05_schema.
+- Không phụ thuộc module M3/M5 chưa hoàn thiện; không đọc GT.
+- Baseline random sinh CSV cặp rỗng nhưng đủ header và split theo từng ảnh.
+- Baseline exact chỉ phát hiện ảnh giống từng byte, split cả nhóm cùng phía.
+- Lệnh team --run-name baseline vẫn dùng được, mặc định là baseline exact.
+- Đã chuẩn bị 48 ứng viên; Khải đã gán và xuất gold cuối 47 cặp.
+- Cặp im_090 / im_094 chưa chắc được bỏ khỏi gold; nhãn người dùng được giữ nguyên.
+- Trang xem hai ảnh offline: out/m2/label_gold.html.
+- Chỉ thay module M2, thêm test M2, gold draft và hướng dẫn M2.
+  Không sửa src/main.py, schema, module người khác hoặc config ngưỡng của M4.
+
+3. VIỆC BẠN LÀM NGAY: GÁN GOLD BẰNG MẮT
+
+a) Mở out/m2/label_gold.html bằng trình duyệt.
+b) Nhập tên thật của bạn ở ô người gán nhãn.
+c) Xem cả hai ảnh trong từng cặp; chọn:
+   - 1: near-duplicate/cùng nội dung nguồn, có thể bị crop/sáng/nén.
+   - 0: không phải near-duplicate; cùng màu/camera/thời gian chưa đủ để kết luận.
+   - Không chắc: để trống, không đoán để đủ số lượng.
+d) Chọn loại case ĐÃ XÁC NHẬN bằng mắt: exact/transformed/burst/color_trap/other.
+e) Viết lý do nhìn thấy trên ảnh. Không chỉ ghi "AI nói trùng" hoặc "hash giống".
+f) Dùng "Tải bản nháp" để sao lưu tiến độ nếu chưa xong.
+   Trình duyệt có thử lưu tự động, nhưng một số browser chặn localStorage cho
+   file local; hãy tải bản nháp trước khi đóng cửa sổ.
+g) Nhãn cuối cần 30–50 cặp và đủ bốn loại theo phân công. Có thể bỏ cặp chưa chắc.
+   Nếu ứng viên chưa đủ loại thật: xem thêm fixtures và bổ sung thủ công; không
+   gán ép loại case. Tập ứng viên là kết quả tìm kiếm, không phải ground truth.
+h) Bấm "Xuất gold hoàn chỉnh". Trình duyệt tải gold_pairs.csv.
+i) Chép file đã xuất đè đúng data/gold/gold_pairs.csv trong checkout M2 này.
+   Bản trong repo đã có 47 cặp hoàn chỉnh; không ghi đè bằng draft cũ chưa gán.
+
+Schema file cuối:
+img_a,img_b,is_dup,note
+Luôn img_a < img_b; note từ trang sẽ kèm tên bạn, loại case và lý do.
+
+Kiểm tra sau khi chép:
+python -m src.t05_baseline --check-gold data/gold/gold_pairs.csv
+
+Lệnh phải thành công rồi mới bàn giao cho M4. Đây là gold DEV được dùng để tune,
+không được báo điểm trên nó như kết quả holdout độc lập.
+
+Khôi phục bản nháp nếu cần:
+- Chép gold_pairs_draft.csv đè data/gold/gold_pairs.csv.
+- Chạy python -m src.t05_baseline --prepare-gold
+- Mở lại trang. File nhãn hiện có sẽ không bị generator ghi đè.
+- Nếu cần đổi trình duyệt, note chứa type=... giúp bạn chọn lại loại case.
+
+4. CHẠY HAI BASELINE
+
+Baseline A — random split per image:
+python -m src.main --config configs/lab.yaml --output out/baseline_random --run-name baseline_random --pipeline src.t05_baseline --offline --seed 42
+
+Baseline B — exact SHA-256; lệnh tương thích thông báo team:
+python -m src.main --config configs/lab.yaml --output out/baseline --run-name baseline --pipeline src.t05_baseline --offline --seed 42
+
+Cả hai thư mục có suspect_pairs.csv, split_manifest.csv, baseline_summary.json,
+decision.json và run_info.json. Không commit out/.
+--run-name baseline_exact hoặc baseline_b cũng chọn exact; baseline_a chọn random.
+Nếu M1 muốn chọn qua config, có thể dùng params.baseline_method=random|exact;
+M2 không tự sửa cấu hình chung. Mặc định baseline là exact để giữ lệnh team hiện tại.
+
+5. KIỂM TRA VÀ ĐÁNH GIÁ
+
+python -m pytest tests/test_t05_m2.py -o addopts='' -q
+python -m tools.verify_manifests
+
+Khi có GT giảng viên:
+python -m src.evaluate --track t05 --pred out/baseline/suspect_pairs.csv --run-name baseline --out reports/metrics_baseline.json
+
+Repo học viên hiện không có gt/. Lệnh evaluate chính thức sẽ trả exit 2;
+không tạo hoặc viết tay metrics_baseline.json để lấp chỗ trống.
+M6 có thể dùng gold_check để tính metric nội bộ trên các cặp đã được bạn gán.
+Chỉ chấm cặp có nhãn, không coi cặp chưa gán là negative.
+HOLD của baseline là đúng: baseline không phải khuyến nghị release.
+
+6. GIT VÀ BÀN GIAO
+
+Git author cho M2 được người dùng xác nhận là kasdie. Kiểm tra identity trước commit:
+git config user.name
+git config user.email
+
+Sau khi gold hoàn chỉnh và test đạt, kiểm tra và stage các file của M2:
+git diff -- src/t05_baseline.py
+git status --short
+git add src/t05_baseline.py tests/test_t05_m2.py data/gold/gold_pairs.csv reports/M2_START.txt
+git diff --cached
+git commit -m "M2: add reproducible baselines and manually labelled gold pairs"
+
+Chỉ dùng mô tả "manually labelled" khi chính bạn đã hoàn tất gán nhãn thật.
+Nếu commit code trước, đổi mô tả thành "M2: add random and exact baselines" và
+chưa stage gold draft như thể đó là gold đã dùng được.
+
+Theo thỏa thuận với M1, push nhánh M2 và gửi commit/PR; đừng force-push hoặc tự
+merge nhánh chung. Trạng thái xuất bản cuối được báo riêng cùng commit/PR thực tế.
+
+Handoff gửi M1/M4/M6:
+- Tôi là M2; commit: ...
+- Baseline A: random; baseline B (lệnh baseline): exact SHA-256.
+- Đã test: ...; seed=42; input fixtures không đổi.
+- Gold: ... cặp, tự xem và gán nhãn; đủ loại ...; giới hạn ...
+- M4 nhận data/gold/gold_pairs.csv để tune; M1 nhận module baseline;
+  M6 nhận gold để kiểm tra nội bộ, không nhầm với GT chính thức.
+
+Nhớ tự điền đúng dòng M2 trong reports/team_contributions.csv và phần mình
+trong reports/group_report.md khi có thông tin author/commit và kết quả thật.
+
+7. KẾT QUẢ KIỂM TRA KHI CHUẨN BỊ
+
+- Sau cập nhật main có module M3: 53 passed, 39 skipped; skip do thiếu GT giảng viên.
+- M2 có 5 test riêng, gồm schema, seed, exact group split, CSV rỗng, offline,
+  manifest hỏng, gold chưa gán và bảo toàn file nhãn hiện có.
+- 14 manifest hợp lệ; fixtures không thay đổi.
+- Baseline A: 120 ảnh, 36 test / 84 train, không tìm cặp.
+- Baseline B: 100 nhóm SHA-256, 20 cặp exact, 36 test / 84 train.
+- Đây là thống kê vận hành, chưa phải F1/recall chất lượng.
+- JavaScript export đã chạy thử bằng JavaScriptCore với DOM mô phỏng; CSV đúng
+  bốn cột, giữ tên/nguyên văn note. Chưa kiểm tra thao tác trong trình duyệt thật.
+- Gold thật có 47 nhãn do Khải xác nhận: 34 positive, 13 negative; đủ loại yêu cầu.
+- src.evaluate đã kiểm tra: exit 2 vì không có gt/gt_groups.csv; chưa sinh metric
+  chính thức và không tạo số liệu giả.
