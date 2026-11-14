@@ -13,4 +13,7 @@ offline: true                     # demo/eval must not touch the network
 strict_provenance: true           # fail if manifest.csv hashes do not match
 
 # Track params (merged over track_config.params). Freeze before evaluation.
-params: {}
+params:                           # M4: chosen on dev gold data/gold/gold_pairs.csv (47 pairs), FROZEN
+  w_phash: 0.8                    # pHash similarity weight (structure, robust to brightness)
+  w_hist: 0.2                     # colour-histogram weight (Bhattacharyya); colour alone hits the trap
+  threshold: 0.757                # best F1 on gold (0.986), midpoint of score gap 0.635..0.879
