@@ -1,0 +1,48 @@
+img_a,img_b,is_dup,note
+im_000,im_001,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_006,im_007,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_012,im_013,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_018,im_019,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_024,im_025,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_030,im_031,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_036,im_037,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_042,im_043,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_048,im_049,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_054,im_055,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_060,im_061,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_066,im_067,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_102,im_106,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_103,im_106,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_105,im_106,1,reviewer=Khải; type=transformed; cùng scene nhưng im_105 có màu sáng hơn.
+im_102,im_105,1,reviewer=Khải; type=other; cùng scene nhưng im_105 sáng hơn.
+im_103,im_105,1,reviewer=Khải; type=other; cùng scene nhưng im_105 có màu sáng hơn.
+im_048,im_051,1,"reviewer=Khải; type=other; cùng scene, im_051 có màu sáng hơn."
+im_049,im_051,1,"reviewer=Khải; type=other; cùng scene, im_051 sáng hơn"
+im_018,im_021,1,"reviewer=Khải; type=other; cùng scene, im_021 có màu sáng hơn."
+im_019,im_021,1,"reviewer=Khải; type=other; cùng scene, im_021 có màu sáng hơn."
+im_066,im_069,1,"reviewer=Khải; type=other; cùng scene, im_069 có màu sáng hơn."
+im_067,im_069,1,"reviewer=Khải; type=other; cùng scene, im_069 có màu sáng hơn."
+im_000,im_003,1,"reviewer=Khải; type=other; cùng scene, im_003 có màu sáng hơn."
+im_018,im_022,0,"reviewer=Khải; type=burst; cùng scene, im_022 xe màu xanh lá đi sau cùng chạy nhanh hơn xe bên im_018, nhìn vệch màu trắng của đường đã bị xe im_022 đè lên."
+im_030,im_034,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_078,im_082,1,"reviewer=Khải; type=other; cùng scene, im_078 có màu sáng hơn."
+im_054,im_058,1,"reviewer=Khải; type=other; cùng scene, im_054 có màu sáng hơn."
+im_036,im_040,1,"reviewer=Khải; type=other; cùng scene, im_036 có màu sáng hơn."
+im_012,im_016,1,"reviewer=Khải; type=other; cùng scene, im_012 có màu sáng hơn."
+im_108,im_112,1,"reviewer=Khải; type=other; cùng scene, im_112 có màu sáng hơn."
+im_000,im_004,1,"reviewer=Khải; type=other; cùng scene, im_004 có màu sáng hơn."
+im_006,im_010,1,"reviewer=Khải; type=other; cùng scene, im_006 có màu sáng hơn."
+im_024,im_028,1,reviewer=Khải; type=exact; tôi thấy trùng
+im_042,im_046,1,"reviewer=Khải; type=other; cùng scene, im_046 có màu sáng hơn."
+im_024,im_101,0,"reviewer=Khải; type=other; khác scene nhưng cùng màu đường, dải cỏ 2 bên đường"
+im_025,im_101,0,"reviewer=Khải; type=other; khác scene nhưng cùng màu đường, dải cỏ 2 bên đường"
+im_028,im_101,0,"reviewer=Khải; type=color_trap; khác scene nhưng cùng màu đường, dải cỏ 2 bên đường"
+im_011,im_100,0,"reviewer=Khải; type=color_trap; khác scene nhưng cùng màu đường, dải cỏ 2 bên đường"
+im_082,im_100,0,"reviewer=Khải; type=color_trap; khác scene nhưng cùng màu đường, dải cỏ 2 bên đường"
+im_047,im_100,0,"reviewer=Khải; type=color_trap; khác scene nhưng cùng màu đường, dải cỏ 2 bên đường"
+im_078,im_096,0,"reviewer=Khải; type=color_trap; khác scene nhưng cùng màu đường, dải cỏ 2 bên đường"
+im_078,im_097,0,"reviewer=Khải; type=color_trap; khác scene nhưng cùng màu đường, dải cỏ 2 bên đường"
+im_079,im_096,0,"reviewer=Khải; type=color_trap; khác scene nhưng cùng màu đường, dải cỏ 2 bên đường"
+im_079,im_097,0,"reviewer=Khải; type=color_trap; khác scene nhưng cùng màu đường, dải cỏ 2 bên đường"
+im_028,im_029,0,"reviewer=Khải; type=color_trap; khác scene nhưng cùng màu đường, dải cỏ 2 bên đường"
+im_047,im_096,0,"reviewer=Khải; type=color_trap; khác scene nhưng cùng màu đường, dải cỏ 2 bên đường"
