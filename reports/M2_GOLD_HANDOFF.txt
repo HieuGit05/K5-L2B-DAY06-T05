@@ -1,0 +1,73 @@
+M2 — BASELINE VÀ GOLD SET BÀN GIAO
+===================================
+
+Người gán nhãn: Khải.
+File dùng chung: data/gold/gold_pairs.csv.
+47 cặp được người dùng xem và gán nhãn: 34 trùng/near-duplicate, 13 không trùng.
+Loại case: exact 16; transformed 1; burst 1; color_trap 10; other 19.
+Cặp im_090 / im_094 chưa chắc đã được người dùng để trống và loại khỏi file cuối.
+Ghi chú cặp im_018 / im_022 đã giải thích khác biệt vị trí xe/vạch đường.
+
+SHA-256 của file gold:
+edd4b669b42b829b04cca127aa2326fc7036fe95a16dd600cd95f0dffd26c86d
+
+Đã kiểm tra: đúng bốn cột img_a,img_b,is_dup,note; 30–50 cặp; ID thuộc fixtures;
+canonical img_a < img_b; không trùng cặp; nhãn 0/1; có reviewer/loại case/lý do;
+đủ bốn loại yêu cầu; không còn ghi chú "không chắc" trong file gold cuối.
+Không sửa nhãn/ghi chú người gán khi nhập file vào checkout.
+Kiểm tra cấu trúc không thay thế đánh giá độc lập chất lượng nhãn.
+
+Kiểm tra lại:
+python -m src.t05_baseline --check-gold data/gold/gold_pairs.csv
+
+M4: dùng file này chọn ngưỡng; ghi protocol/lý do và khóa ngưỡng trước evaluation.
+M6: dùng gold_check chấm trên tập cặp đã có nhãn. Không coi cặp ngoài gold là
+negative. Điểm trên gold đã dùng tune là điểm dev, không phải điểm holdout.
+M1: tích hợp baseline src/t05_baseline.py và test M2; lệnh --run-name baseline
+mặc định chọn exact SHA-256, baseline_random chọn random split theo ảnh.
+
+Baseline đã chạy trên 120 ảnh, seed 42, tỷ lệ test 0,3:
+- A random: 36 test / 84 train, CSV dự đoán cặp chỉ có header.
+- B exact: 100 nhóm SHA-256, 20 cặp exact, 36 test / 84 train.
+Không có GT giảng viên nên chưa có metrics_baseline.json chính thức.
+Không được điền số liệu chính thức bằng cách chấm lại trên gold dev rồi đổi tên.
+
+Repo: https://github.com/HieuGit05/K5-L2B-DAY06-T05
+Branch bàn giao: m2/baseline-gold; base đã đồng bộ main tại d3bd028.
+Git author đã được người dùng xác nhận: kasdie <lqkhai2512@gmail.com>.
+Commit triển khai và gold: 027fb16 (feat: add M2 baselines and 47 manually reviewed gold pairs).
+Kiểm tra sau khôi phục/sửa lỗi: 69 passed, 39 skipped; 14 manifests hợp lệ.
+M1 review/tích hợp branch M2; M4 lấy data/gold/gold_pairs.csv để chọn ngưỡng;
+M6 lấy cùng gold và hướng dẫn để đánh giá nội bộ trên các cặp đã gán.
+Link commit/PR và trạng thái push được cung cấp riêng sau khi GitHub xác nhận.
+Chỉ có bàn giao qua repo/PR; không gửi email hoặc tin nhắn ngoài phạm vi này.
+
+Sau khi branch đã được push, M1/M4/M6 có thể lấy bản bàn giao mà chưa cần merge main:
+git fetch origin
+git switch --track origin/m2/baseline-gold
+
+Nếu đang có việc trên branch khác, commit/lưu công việc riêng trước khi switch.
+M1 quyết định tích hợp vào main; M2 không tự merge phần mình vào nhánh chung.
+
+SỬA LỖI WINDOWS VÀ KHÔI PHỤC SAU REVERT — 15/11/2026
+
+Xác minh lịch sử: PR #1 từng được merge rồi revert bởi PR #3; main trở về stub
+baseline và mất gold/test M2. Nhánh này đã cập nhật main, bao gồm .gitattributes
+của M1 và các module M3/M4/M5 hiện có, sau đó khôi phục phần M2 cần thiết.
+
+Lỗi M2 xác nhận được: ba Path.read_text() trong tests/test_t05_m2.py dùng encoding
+hệ thống. JSON/HTML UTF-8 có tiếng Việt gây UnicodeDecodeError trên CP1252.
+Đã sửa cả ba thành read_text(encoding="utf-8"), giữ nguyên các assertion cũ.
+Thêm hai regression scenario ép default read_text thành CP1252:
+- Trước sửa: baseline-json và gold-html đều fail UnicodeDecodeError.
+- Sau sửa: cả hai pass; toàn bộ suite 69 passed, 39 skipped do thiếu GT giảng viên.
+
+Lỗi hash_mismatch là vấn đề LF/CRLF riêng: M2 không sửa fixtures. Đã xác minh
+checkout tạm main với core.autocrlf=true vẫn pass 14 manifest nhờ .gitattributes
+của M1. Không đổi manifest/checksum, không tắt provenance, không sửa thuộc tính Git.
+
+Gold giữ nguyên SHA-256 ở trên; baseline source được khôi phục nguyên byte từ
+c1b537a. Không tái gán nhãn, tune threshold hoặc thay code/schema của thành viên khác.
+Chỉ khôi phục baseline/gold/test/handoff và điền đúng dòng contributions M2;
+không khôi phục các hướng dẫn cũ không cần thiết đã bị revert.
+Kiểm tra CP1252 và checkout autocrlf được mô phỏng trên macOS, chưa chạy máy Windows thật.
