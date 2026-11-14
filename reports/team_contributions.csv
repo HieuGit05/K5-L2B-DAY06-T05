@@ -1,6 +1,7 @@
 member,git_author_name,git_email,role,modules_files,commit_shas,evidence_note,presenter
-Member 1,,,Lead / Integrator,src/main.py; configs/,,,
-Member 2,,,Data & fixtures,fixtures/; tools/,,,
-Member 3,,,Core algorithm,src/pipeline.py,,,
-Member 4,,,QA / metric,tests/; reports/metrics_*.json,,,
-Member 5,,,Human review + report,reports/group_report.md; demo/,,,
+Member 1,HieuGit05,dangtrunghieu29.12.05@gmail.com,Lead / Integrator,src/pipeline.py; configs/lab.yaml; reports/metric_contract.md,2e35394; 62bb36c; 94aec32,Tich hop 5 buoc load-process-rank-review-decide; review queue theo cap anh (pair_id); split_manifest.csv; decision GO/HOLD/REWORK; metric contract; merge M3 (1597c09 = import code goc cua lab),
+Member 2,,,Baseline + gold set,src/t05_baseline.py; data/gold/gold_pairs.csv; reports/metrics_baseline.json,,,
+Member 3,Hoang Quang Truong,truonghoangg25@gmail.com,Detector A - hash,src/t05_hash.py; tests/test_t05_hash.py,4bdf355,compute_hashes (sha256/phash/dhash/ahash) + hash_pairs (Hamming cho 7140 cap); test pass,
+Member 4,,,Detector B - feature + score,src/t05_features.py; params trong configs/lab.yaml,,,
+Member 5,,,Grouping + leak-free split,src/t05_grouping.py; tests/,,,
+Member 6,,,Human review + failure analysis,src/t05_review.py; demo/,,,
