@@ -1,0 +1,5 @@
+# Data files are checked by sha256 in manifest.csv (strict_provenance).
+# Never convert their line endings on checkout (Windows core.autocrlf=true would
+# turn LF into CRLF, change the bytes and fail the provenance check).
+fixtures/** -text
+data/** -text
