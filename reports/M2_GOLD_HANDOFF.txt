@@ -35,8 +35,16 @@ Không được điền số liệu chính thức bằng cách chấm lại trê
 Repo: https://github.com/HieuGit05/K5-L2B-DAY06-T05
 Branch bàn giao: m2/baseline-gold; base đã đồng bộ main tại 94aec32.
 Git author đã được người dùng xác nhận: kasdie <lqkhai2512@gmail.com>.
+Commit triển khai và gold: 027fb16 (feat: add M2 baselines and 47 manually reviewed gold pairs).
 Kiểm tra trên base đã cập nhật: 53 passed, 39 skipped; 14 manifests hợp lệ.
 M1 review/tích hợp branch M2; M4 lấy data/gold/gold_pairs.csv để chọn ngưỡng;
 M6 lấy cùng gold và hướng dẫn để đánh giá nội bộ trên các cặp đã gán.
 Link commit/PR và trạng thái push được cung cấp riêng sau khi GitHub xác nhận.
 Chỉ có bàn giao qua repo/PR; không gửi email hoặc tin nhắn ngoài phạm vi này.
+
+Sau khi branch đã được push, M1/M4/M6 có thể lấy bản bàn giao mà chưa cần merge main:
+git fetch origin
+git switch --track origin/m2/baseline-gold
+
+Nếu đang có việc trên branch khác, commit/lưu công việc riêng trước khi switch.
+M1 quyết định tích hợp vào main; M2 không tự merge phần mình vào nhánh chung.
