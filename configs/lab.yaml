@@ -3,7 +3,7 @@
 # the track defaults loaded from `track_config`.
 # ============================================================
 group_id: Nhóm NhăngNhăng                     # e.g. G07
-owner: "TODO: Đặng Trung Hiếu (trưởng nhóm)"   # mandatory for every Decision
+owner: "Đặng Trung Hiếu (trưởng nhóm)"   # mandatory for every Decision
 track_config: tracks/t05.yaml     # pick your challenge: tracks/t01.yaml ... tracks/t14.yaml
 track: t05                        # must match track_config
 input: fixtures/t05_near_duplicate  # or data/real/... if your instructor provided a real pack
