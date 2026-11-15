@@ -1,0 +1,27 @@
+{
+  "status": "HOLD",
+  "reason_code": "HIGH_FALSE_MERGE_IN_REVIEW",
+  "reason": "Reviewers rejected 80% of queued pairs (false merges)",
+  "owner": "Đặng Trung Hiếu (trưởng nhóm)",
+  "scope": "t05/poc",
+  "evidence": [
+    "out\\poc\\suspect_pairs.csv",
+    "out\\poc\\split_manifest.csv",
+    "out\\poc\\review_queue.csv",
+    "out\\poc\\audit_log.jsonl"
+  ],
+  "metrics": {
+    "n_images": 120,
+    "n_pairs": 7140,
+    "n_pred_dup": 236,
+    "residual_leak_pairs": 0,
+    "test_share": 0.325,
+    "target_test_share": 0.3,
+    "kept_share": 1.0,
+    "n_reviewed": 20,
+    "review_reject_rate": 0.8,
+    "warnings": []
+  },
+  "ts": "2026-11-15T08:39:33+00:00",
+  "canonical": "HOLD"
+}
