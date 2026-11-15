@@ -178,7 +178,9 @@ images.csv + manifest.csv ──(01 load: verify sha256)──▶ 120 ảnh
 ```bash
 pip install -r requirements.txt
 python -m tools.verify_manifests                                   # 14 manifests, 0 failing
-python -m src.main --config configs/lab.yaml --offline --seed 42   # PoC -> out/poc/
+python -m src.main --config configs/lab.yaml --offline --seed 42   # PoC -> out/poc/ (HOLD · PENDING_HUMAN_REVIEW)
+cp demo/review_queue_reviewed.csv out/poc/                          # đưa review của M6 vào (Windows: copy demo\review_queue_reviewed.csv out\poc\)
+python -m src.main --config configs/lab.yaml --offline --seed 42   # chạy lại -> HOLD · HIGH_FALSE_MERGE_IN_REVIEW (= demo/decision.json)
 python -m src.main --config configs/lab.yaml --output out/baseline --run-name baseline --pipeline src.t05_baseline --offline --seed 42
 python -m src.evaluate --track t05 --pred out/poc/suspect_pairs.csv --run-name poc --out reports/metrics_poc.json   # cần GT của giảng viên
 python -m pytest -q
