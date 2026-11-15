@@ -3,11 +3,6 @@
 > Điền đầy đủ, cụ thể, không viết chung chung. Mọi con số phải lấy từ file do script sinh ra
 > (`reports/metrics_*.json`, `reports/table1_baseline_vs_poc.md`) — không gõ tay, không làm tròn mất đơn vị.
 > 3–5 trang (hoặc README + report.md tương đương).
->
-> **Trạng thái bản nháp (M1, 2026-11-15):** đã điền 00, 01, 07, 08, 10 và phần số liệu của 02, 04, 05.
-> Các chỗ `【Mx bổ sung】` là phần thành viên tương ứng viết thêm. Số liệu bên dưới lấy từ output script
-> ở commit `38fe316` (`out/poc/decision.json`, `out/poc/run_info.json`, `out/baseline/baseline_summary.json`,
-> `reports/M4_ablation.csv`, `reports/M2_GOLD_HANDOFF.txt`).
 
 ## 00 · Header
 
@@ -19,7 +14,8 @@
 | Git URL | https://github.com/HieuGit05/K5-L2B-DAY06-T05 |
 | Tag `demo-180m` (commit) | 【M1 điền sau khi gắn tag】 |
 | Tag `final-24h` (commit) | 【M1 điền sau khi gắn tag】 |
-| Deadline (giờ VN) | 【M1 điền】 |
+| Deadline (giờ VN) | 12:00 ngày 15/11/2026 |
+| Người thuyết trình | Đặng Trung Hiếu (M1) |
 
 ## 01 · Problem statement
 
@@ -207,12 +203,12 @@ python -m pytest -q
 
 | Học viên | Git author/email | Module / vai trò | Commit SHA / diff chứng minh | Trình bày? |
 |---|---|---|---|---|
-| Member 1 — Đặng Trung Hiếu | HieuGit05 / dangtrunghieu29.12.05@gmail.com | Integration / CLI: `src/pipeline.py`, `configs/lab.yaml`, `reports/metric_contract.md`, `.gitattributes`, `reports/group_report.md`, tích hợp + review các nhánh; sửa pipeline gom nhóm + split **sau** review | `2e35394`, `62bb36c`, `94aec32`, `d3bd028`, `d168cec`, `0886f6c` (`1597c09` = import code gốc của lab) | 【】 |
-| Member 2 — Lê Quang Khải | kasdie / lqkhai2512@gmail.com | Data + GT: `src/t05_baseline.py`, `data/gold/gold_pairs.csv` (47 cặp), `tests/test_t05_m2.py` | `027fb16`, `c1b537a`, `bcfea2a` | 【】 |
-| Member 3 — Hoang Quang Truong | Hoang Quang Truong / truonghoangg25@gmail.com | Core algorithm (Detector A): `src/t05_hash.py`, `tests/test_t05_hash.py` | `4bdf355` | 【】 |
-| Member 4 — Dương Quốc Huy | dqhuy11 / duongquochuy1107@gmail.com | Metric + ablation (Detector B): `src/t05_features.py`, `tests/test_t05_features.py`, `reports/M4_ablation.csv`, ngưỡng trong `configs/lab.yaml` | `bac0120` (merge/revert PR: `1907ad2`, `010eabf`, `d84c9fc`, `47f6d07`) | 【】 |
-| Member 5 — Nguyễn Nhân Thành Long | longnguyen3204 / longnguyen2403@gmail.com | Grouping + split: `src/t05_grouping.py`, `tests/test_t05_grouping.py` | `a32c85e` | 【】 |
-| Member 6 — Hoàng Kim Chi | Cheese1501 / hoangkimchi46@gmail.com | Review queue + `gold_check` + failure analysis: `src/t05_review.py`, `tests/test_t05_review.py`, `reports/group_report.md`, `reports/team_contributions.csv`; **human review 20 cặp** (`demo/`) | `2e10b20`, `5dd1d9b`, `afd1070` | 【】 |
+| Member 1 — Đặng Trung Hiếu | HieuGit05 / dangtrunghieu29.12.05@gmail.com | Integration / CLI: `src/pipeline.py`, `configs/lab.yaml`, `reports/metric_contract.md`, `.gitattributes`, `reports/group_report.md`, tích hợp + review các nhánh; sửa pipeline gom nhóm + split **sau** review | `2e35394`, `62bb36c`, `94aec32`, `d3bd028`, `d168cec`, `0886f6c` (`1597c09` = import code gốc của lab) | Có |
+| Member 2 — Lê Quang Khải | kasdie / lqkhai2512@gmail.com | Data + GT: `src/t05_baseline.py`, `data/gold/gold_pairs.csv` (47 cặp), `tests/test_t05_m2.py` | `027fb16`, `c1b537a`, `bcfea2a` | Không |
+| Member 3 — Hoang Quang Truong | Hoang Quang Truong / truonghoangg25@gmail.com | Core algorithm (Detector A): `src/t05_hash.py`, `tests/test_t05_hash.py` | `4bdf355` | Không |
+| Member 4 — Dương Quốc Huy | dqhuy11 / duongquochuy1107@gmail.com | Metric + ablation (Detector B): `src/t05_features.py`, `tests/test_t05_features.py`, `reports/M4_ablation.csv`, ngưỡng trong `configs/lab.yaml` | `bac0120` (merge/revert PR: `1907ad2`, `010eabf`, `d84c9fc`, `47f6d07`) | Không |
+| Member 5 — Nguyễn Nhân Thành Long | longnguyen3204 / longnguyen2403@gmail.com | Grouping + split: `src/t05_grouping.py`, `tests/test_t05_grouping.py` | `a32c85e` | Không |
+| Member 6 — Hoàng Kim Chi | Cheese1501 / hoangkimchi46@gmail.com | Review queue + `gold_check` + failure analysis: `src/t05_review.py`, `tests/test_t05_review.py`, `reports/group_report.md`, `reports/team_contributions.csv`; **human review 20 cặp** (`demo/`) | `2e10b20`, `5dd1d9b`, `afd1070` | Không |
 
 ## 11 · References
 
