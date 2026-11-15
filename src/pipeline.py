@@ -2,9 +2,10 @@
 
 Lab contract = 5 automated steps, run by `python -m src.main ...`:
     01 load      images.csv + provenance check (manifest.csv)
-    02 process   hashes (M3) -> hist/time features + score (M4) -> groups + split (M5)
+    02 process   hashes (M3) -> hist/time features + score (M4)
     03 rank      review queue of image PAIRS, item_id = t05_schema.pair_id(img_a, img_b)
-    04 review    apply reviewer decisions (approve -> dup, reject -> not dup) + audit log
+    04 review    apply reviewer decisions (approve -> dup, reject -> not dup) + audit log,
+                 then groups + split (M5) on the reviewed pairs
     05 decide    GO / HOLD / REWORK with reason_code + owner
 
 Outputs (in ctx.output_dir, e.g. out/poc/):
@@ -60,9 +61,12 @@ def load(ctx: RunContext) -> dict:
 
 # ---------------------------------------------------------------- 02 process
 def process(ctx: RunContext, data: dict) -> pd.DataFrame:
-    """Call the helpers in contract order. Returns `pairs` (PAIR_COLS); stores split in data."""
+    """Detectors in contract order. Returns scored `pairs` (PAIR_COLS).
+
+    Grouping + split run later (group_and_split), AFTER human review, so that an approved
+    or rejected pair changes the groups and the split stays leak-free.
+    """
     images = data["images"]
-    image_ids = images["image_id"].tolist()
 
     # Detector A (M3): file + perceptual hashes, all unordered pairs with Hamming distances.
     hashes = t05_hash.compute_hashes(images, ctx.input_dir)
@@ -77,8 +81,14 @@ def process(ctx: RunContext, data: dict) -> pd.DataFrame:
     check_pairs(pairs)
     if pairs.empty:
         _warn(ctx, "NO_CANDIDATE_PAIRS", "no candidate pairs produced (detectors empty or stubbed)")
+    ctx.stats["n_pairs"] = len(pairs)
+    ctx.stats["n_pred_dup_raw"] = int(pairs["pred_dup"].sum()) if len(pairs) else 0
+    return pairs
 
-    # Grouping + leak-free split (M5): whole groups go to one side.
+
+def group_and_split(ctx: RunContext, pairs: pd.DataFrame, images: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Grouping + leak-free split (M5) on the FINAL (post-review) pairs: whole groups go to one side."""
+    image_ids = images["image_id"].tolist()
     groups = t05_grouping.build_groups(pairs, image_ids, method=str(ctx.param("group_method", "union_find")))
     if groups.empty:
         _warn(ctx, "GROUPING_NOT_IMPLEMENTED", "build_groups returned no rows; using one group per image")
@@ -87,12 +97,9 @@ def process(ctx: RunContext, data: dict) -> pd.DataFrame:
     if split.empty:
         _warn(ctx, "SPLIT_NOT_IMPLEMENTED", "make_split returned no rows; using a seeded split per group")
         split = _fallback_split(groups, float(ctx.param("test_fraction", 0.3)), ctx.rng)
-    data["groups"] = groups
-    data["split"] = split
-    ctx.stats["n_pairs"] = len(pairs)
     ctx.stats["n_pred_dup"] = int(pairs["pred_dup"].sum()) if len(pairs) else 0
     ctx.stats["n_groups"] = int(groups["group_id"].nunique())
-    return pairs
+    return groups, split
 
 
 def _normalise_pairs(pairs: pd.DataFrame) -> pd.DataFrame:
@@ -235,7 +242,7 @@ def run(ctx: RunContext) -> None:
     final = review(ctx, scored, queue)
     final[spec.pred_columns + [c for c in final.columns if c not in spec.pred_columns]].to_csv(ctx.out(spec.pred_file), index=False)
 
-    split = data["split"]
+    _, split = group_and_split(ctx, final, data["images"])   # after review: overrides reshape the groups
     check_split(split, data["images"]["image_id"].tolist())
     split[SPLIT_COLS].to_csv(ctx.out(SPLIT_FILE), index=False)   # next to suspect_pairs.csv (evaluator needs it)
     write_decision(decide(ctx, final, split), ctx.out("decision.json"), ctx.out("decision_log.csv"))
