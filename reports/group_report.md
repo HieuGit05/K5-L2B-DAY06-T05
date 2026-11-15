@@ -196,7 +196,7 @@ python -m pytest -q
 | Member 3 — Hoang Quang Truong | Hoang Quang Truong / truonghoangg25@gmail.com | Core algorithm (Detector A): `src/t05_hash.py`, `tests/test_t05_hash.py` | `4bdf355` | 【】 |
 | Member 4 | dqhuy11 / duongquochuy1107@gmail.com | Metric + ablation (Detector B): `src/t05_features.py`, `tests/test_t05_features.py`, `reports/M4_ablation.csv`, ngưỡng trong `configs/lab.yaml` | `bac0120` (merge/revert PR: `1907ad2`, `010eabf`, `d84c9fc`, `47f6d07`) | 【】 |
 | Member 5 | longnguyen3204 / longnguyen2403@gmail.com | Grouping + split: `src/t05_grouping.py`, `tests/test_t05_grouping.py` | `a32c85e` | 【】 |
-| Member 6 | Cheese1501 / hoangkimchi46@gmail.com | Review queue + `gold_check` + failure analysis: `src/t05_review.py`, `tests/test_t05_review.py`, `reports/group_report.md`, `reports/team_contributions.csv` | Code/test commit sẽ điền sau khi commit | Reviewer evidence pending human sign-off |
+| Member 6 | Cheese1501 / hoangkimchi46@gmail.com | Review queue + `gold_check` + failure analysis: `src/t05_review.py`, `tests/test_t05_review.py`, `reports/group_report.md`, `reports/team_contributions.csv` | `2e10b20` | Reviewer evidence pending human sign-off |
 
 ## 11 · References
 
