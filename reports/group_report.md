@@ -87,9 +87,9 @@ images.csv + manifest.csv ──(01 load: verify sha256)──▶ 120 ảnh
 | Metric (unit) | Baseline (exact) | PoC | Δ & chú thích |
 |---|---|---|---|
 | Primary: Leakage Detection F1 (pair) — chính thức | 【GV chấm】 | 【GV chấm】 | higher is better |
-| Primary trên gold dev (47 cặp, nội bộ) | 【M6 chạy gold_check】 | 0.986 (TP 34 / FP 1 / FN 0; P 0.971, R 1.000) | điểm dev, ngưỡng đã chọn trên chính tập này |
-| Hard-slice: color_trap trên gold dev | 【M6 bổ sung】 | 【M6 bổ sung】 | N = 10 cặp |
-| Review@B / miss / FP | — | 【sau review M6】 | B = 20 |
+| Primary trên gold dev (47 cặp, nội bộ) | 0.522 (TP 12 / FP 0 / FN 22; P 1.000, R 0.353) | 0.986 (TP 34 / FP 1 / FN 0; P 0.971, R 1.000) | điểm dev, ngưỡng đã chọn trên chính tập này |
+| Hard-slice: color_trap trên gold dev | Acc 100% (TN 10 / FP 0) | Acc 100% (TN 10 / FP 0) | N = 10 cặp; cả 10 cặp đều là negative |
+| Review@B / miss / FP | — | B = 20 đã xếp hàng; quyết định reviewer chưa được xác nhận nên miss/FP sau review chưa đo | Không ghi nhãn thay reviewer |
 | Runtime / 100 items | 0.0241 s / 120 ảnh (≈ 0.0201 s / 100 ảnh); máy M2 macOS ARM64, xem ghi chú bên dưới | 1.85 s / 120 ảnh (≈ 1.5 s / 100 ảnh) | CPU Intel64 Family 6 Model 154, Windows 11, Python 3.13.5 |
 
 **Runtime bổ sung của M2 (đo ngày 15/11/2026, code `d168cec`):** lấy `runtime_seconds` và `stats.n_items` từ `out/baseline/run_info.json` (exact) và `out/baseline_random/run_info.json` (random); giữ nguyên bản ghi và kết quả quy đổi trong [`M2_baseline_runtime.json`](M2_baseline_runtime.json). Baseline B exact: 0.0241 s / 120 ảnh, quy đổi `runtime_seconds × 100 / n_items` = 0.020083 s / 100 ảnh. Baseline A random: 0.0578 s / 120 ảnh, quy đổi 0.048167 s / 100 ảnh. Cả hai là một lần chạy CPU-only, seed 42, trên macOS 26.5.2 ARM64, Python 3.13.18. Timer của `src.main` đo vùng import/gọi pipeline, không gồm khởi động interpreter và các import ban đầu của runner; chưa phải phân phối benchmark nhiều lần. Cột PoC vẫn là số đo Windows của M1, vì vậy không suy ra speedup trực tiếp giữa hai cột khác máy.
@@ -129,7 +129,10 @@ images.csv + manifest.csv ──(01 load: verify sha256)──▶ 120 ảnh
 | **other** | 19 | Acc: 10.5% (TP 0 / FN 17 / TN 2), F1: 0.000 | **Acc: 100.0% (TP 17 / FN 0 / TN 2), F1: 1.000** | 17 cặp near-dup đổi sáng và 2 cặp âm khác scene; PoC đạt độ chính xác tuyệt đối |
 | **Toàn bộ gold dev** | **47** | **P: 1.000, R: 0.353, F1: 0.522** (TP 12 / FN 22) | **P: 0.971, R: 1.000, F1: 0.986** (TP 34 / FP 1) | Đánh giá nội bộ trên 47 cặp dev do M2 gán nhãn |
 
-- Failure case 1 (ảnh/metadata + root cause): 【M6 — bắt buộc: gộp nhầm hai scene vì màu giống】
+- **Failure case 1 — bẫy màu và gộp nhầm nếu chỉ dùng histogram (M6):**
+  - Cặp `im_028` / `im_101` là hard negative do M2 gán nhãn (`is_dup=0`, `type=color_trap`): [im_028](../fixtures/t05_near_duplicate/images/im_028.jpg) và [im_101](../fixtures/t05_near_duplicate/images/im_101.jpg). Người gán ghi nhận hai scene khác nhau nhưng cùng màu mặt đường và dải cỏ hai bên. Cả hai thuộc `cam_0`; thời điểm lần lượt là `2026-10-01T08:52:00.200000` và `2026-10-01T11:28:40`.
+  - **Ablation hist-only sẽ gộp nhầm:** `d_hist = 0.062916`, nên `sim_hist = 1 - d_hist = 0.937084`, cao hơn threshold hist-only `0.3919` trong `reports/M4_ablation.csv`; nếu đưa quyết định này vào Union-Find, hai scene sẽ thành cùng group. Root cause là histogram chỉ so phân bố màu toàn ảnh, bỏ qua vị trí và bố cục đối tượng.
+  - Đây là lỗi của biến thể hist-only, **không phải lỗi đã quan sát ở PoC kết hợp**: với `w_phash=0.8`, `w_hist=0.2`, cặp có `score=0.612417 < 0.757`, `pred_dup=0`; baseline exact và PoC đều có `TN=10/10` trên slice color-trap của gold dev. Vì vậy không báo cáo đây là false merge của bản PoC cuối.
 - Failure case 2 (M5 — phân tích 1 FP trên gold dev và nguy cơ rò rỉ khi split):
   - **1 FP duy nhất trên gold dev (`im_018` và `im_022`)**:
     - *Metadata & Đặc trưng*: Cùng camera `cam_3`, chụp cách nhau 0.2 giây (lúc 08:39:00 và 08:39:00.200). Đặc trưng trích xuất: `d_phash = 2`, `d_hist = 0.0135`, `same_camera = 1`, `score = 0.9723 > 0.757` → PoC phân loại `pred_dup = 1`.
@@ -193,7 +196,7 @@ python -m pytest -q
 | Member 3 — Hoang Quang Truong | Hoang Quang Truong / truonghoangg25@gmail.com | Core algorithm (Detector A): `src/t05_hash.py`, `tests/test_t05_hash.py` | `4bdf355` | 【】 |
 | Member 4 | dqhuy11 / duongquochuy1107@gmail.com | Metric + ablation (Detector B): `src/t05_features.py`, `tests/test_t05_features.py`, `reports/M4_ablation.csv`, ngưỡng trong `configs/lab.yaml` | `bac0120` (merge/revert PR: `1907ad2`, `010eabf`, `d84c9fc`, `47f6d07`) | 【】 |
 | Member 5 | longnguyen3204 / longnguyen2403@gmail.com | Grouping + split: `src/t05_grouping.py`, `tests/test_t05_grouping.py` | `a32c85e` | 【】 |
-| Member 6 | 【M6 bổ sung】 | Review queue + failure analysis: `src/t05_review.py`, `demo/` | 【】 | 【】 |
+| Member 6 | Cheese1501 / hoangkimchi46@gmail.com | Review queue + `gold_check` + failure analysis: `src/t05_review.py`, `tests/test_t05_review.py`, `reports/group_report.md`, `reports/team_contributions.csv` | `2e10b20` | Reviewer evidence pending human sign-off |
 
 ## 11 · References
 
