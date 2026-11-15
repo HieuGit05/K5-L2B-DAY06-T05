@@ -191,7 +191,7 @@ python -m pytest -q
 
 | Học viên | Git author/email | Module / vai trò | Commit SHA / diff chứng minh | Trình bày? |
 |---|---|---|---|---|
-| Member 1 — Đặng Trung Hiếu | HieuGit05 / dangtrunghieu29.12.05@gmail.com | Integration / CLI: `src/pipeline.py`, `configs/lab.yaml`, `reports/metric_contract.md`, `.gitattributes`, tích hợp + review các nhánh | `2e35394`, `62bb36c`, `94aec32`, `d3bd028` (`1597c09` = import code gốc của lab) | 【】 |
+| Member 1 — Đặng Trung Hiếu | HieuGit05 / dangtrunghieu29.12.05@gmail.com | Integration / CLI: `src/pipeline.py`, `configs/lab.yaml`, `reports/metric_contract.md`, `.gitattributes`, `reports/group_report.md`, tích hợp + review các nhánh; sửa pipeline gom nhóm + split **sau** review | `2e35394`, `62bb36c`, `94aec32`, `d3bd028`, `d168cec`, `0886f6c` (`1597c09` = import code gốc của lab) | 【】 |
 | Member 2 — Khải | kasdie / lqkhai2512@gmail.com | Data + GT: `src/t05_baseline.py`, `data/gold/gold_pairs.csv` (47 cặp), `tests/test_t05_m2.py` | `027fb16`, `c1b537a`, `bcfea2a` | 【】 |
 | Member 3 — Hoang Quang Truong | Hoang Quang Truong / truonghoangg25@gmail.com | Core algorithm (Detector A): `src/t05_hash.py`, `tests/test_t05_hash.py` | `4bdf355` | 【】 |
 | Member 4 | dqhuy11 / duongquochuy1107@gmail.com | Metric + ablation (Detector B): `src/t05_features.py`, `tests/test_t05_features.py`, `reports/M4_ablation.csv`, ngưỡng trong `configs/lab.yaml` | `bac0120` (merge/revert PR: `1907ad2`, `010eabf`, `d84c9fc`, `47f6d07`) | 【】 |
