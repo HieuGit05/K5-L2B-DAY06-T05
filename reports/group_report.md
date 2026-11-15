@@ -44,7 +44,10 @@
 
 ## 03 · Research & design
 
-- 2–3 references (URL + ngày xem) và **vì sao** chọn kỹ thuật: 【M3 + M4 bổ sung — pHash/dHash/aHash, Bhattacharyya histogram, union-find vs complete-linkage】
+- 2–3 references (URL + ngày xem) và **vì sao** chọn kỹ thuật:
+  - **Union-Find (Disjoint-Set Forest)**: Cormen et al. (2009), *Introduction to Algorithms*. Khai thác tính đóng bắc cầu (transitive closure) của quan hệ tương đương: nếu $(A, B)$ và $(B, C)$ là near-dup thì $\{A, B, C\}$ bắt buộc phải vào chung một nhóm để triệt tiêu hoàn toàn nguy cơ rò rỉ chéo khi phân chia train/test.
+  - **Complete-Linkage Clustering**: Defays (1977); SciPy documentation (`scipy.cluster.hierarchy.linkage`, method='complete') — https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html (xem 2026-11-14). Đo khoảng cách xa nhất giữa các cụm $D(u, v) = \max \text{dist}(u, v) \le 0.5$. Chọn làm phương pháp đối chứng nhằm khống chế đường kính cụm, kiểm chứng và ngăn ngừa hiện tượng "gộp dây chuyền" (chain merging).
+  - 【M3 + M4 bổ sung — pHash/dHash/aHash, Bhattacharyya histogram】
 - **Sơ đồ data flow:**
 
 ```
@@ -59,7 +62,12 @@ images.csv + manifest.csv ──(01 load: verify sha256)──▶ 120 ảnh
 ```
 
 - **Thành phần offline:** không dùng model hay weights; chỉ numpy / scipy / Pillow / pandas theo `requirements.txt`. Chạy với `--offline` (network bị chặn).
-- **Trade-offs đã cân nhắc:** 120 ảnh → so toàn bộ 7.140 cặp, không cần LSH. pHash bền với đổi sáng/nén nhưng có thể yếu với crop mạnh; histogram màu bắt được biến đổi hình học nhẹ nhưng dính bẫy màu → chỉ cho trọng số 0.2. Union-find đơn giản nhưng có thể gộp dây chuyền; complete-linkage chặt hơn. 【M4 + M5 bổ sung】
+- **Trade-offs đã cân nhắc:**
+  - *Không gian tìm kiếm*: 120 ảnh → so toàn bộ 7.140 cặp, không cần LSH (Locality Sensitive Hashing) hay ANN.
+  - *Trọng số đặc trưng*: pHash bền với đổi sáng/nén nhưng có thể yếu với crop mạnh; histogram màu bắt được biến đổi hình học nhẹ nhưng dính bẫy màu → chỉ cho trọng số 0.2 (kết hợp `0.8·sim_phash + 0.2·sim_hist`).
+  - *Gom nhóm & chia split (Union-Find vs Complete-Linkage — M5)*:
+    - **Union-Find (PoC chọn)**: Đảm bảo nguyên tắc bảo toàn nhóm tuyệt đối — toàn bộ thành phần liên thông đi về cùng một phía của split. Kết quả thực nghiệm: **0 cặp nghi trùng cắt ngang train/test (`residual_leak_pairs = 0`)**, giữ 100% dữ liệu. Đánh đổi: Dễ bị gộp dây chuyền (chain merging) nếu có cặp dương tính giả làm cầu nối (trên 120 ảnh gom thành 31 nhóm, nhóm lớn nhất có 11 ảnh).
+    - **Complete-Linkage**: Ép mọi cặp trong cụm phải có khoảng cách $\le 0.5$ (gần như clique), giúp cụm rất tinh khiết (gom thành 47 nhóm, nhóm lớn nhất chỉ 5 ảnh). Đánh đổi: Bẻ gãy các chuỗi liên kết yếu, dẫn đến **30 cặp nghi trùng bị cắt đôi sang hai phía train/test (`residual_leak_pairs = 30`)**, vi phạm yêu cầu zero-leakage trừ phi chấp nhận drop các cụm biên. Vì mục tiêu hàng đầu của T05 là chống rò rỉ dữ liệu, nhóm chọn Union-Find cho pipeline chính thức.
 
 ## 04 · Baseline vs PoC
 
@@ -100,13 +108,24 @@ images.csv + manifest.csv ──(01 load: verify sha256)──▶ 120 ảnh
 
 ## 06 · Result slices
 
-| Slice | N | Baseline | PoC | Ghi chú |
+| Slice | N | Baseline (exact) | PoC | Ghi chú |
 |---|---|---|---|---|
-| 【M5/M6 bổ sung — exact / transformed / burst】 | | | | |
-| 【M5/M6 bổ sung — color_trap】 | 10 (gold) | | | bẫy khác scene màu giống |
+| **exact** | 16 | Acc: 75.0% (TP 12 / FN 4 / FP 0), F1: 0.857 | **Acc: 100.0% (TP 16 / FN 0 / FP 0), F1: 1.000** | Baseline bỏ sót 4 cặp do nén/re-encode làm đổi byte SHA-256; PoC bắt trọn nhờ pHash |
+| **transformed** | 1 | Acc: 0.0% (TP 0 / FN 1 / FP 0), F1: 0.000 | **Acc: 100.0% (TP 1 / FN 0 / FP 0), F1: 1.000** | Cặp `im_105/im_106` đổi sáng; SHA-256 trượt hoàn toàn, PoC nhận diện chính xác |
+| **burst** | 1 | Acc: 100.0% (TN 1 / FP 0) | **Acc: 0.0% (TN 0 / FP 1), F1: 0.000** | Cặp `im_018/im_022` (cách 0.2s, vật thể di chuyển vi mô); PoC dự đoán nhầm (1 FP duy nhất) |
+| **color_trap** | 10 | Acc: 100.0% (TN 10 / FP 0) | **Acc: 100.0% (TN 10 / FP 0)** | Khác scene cùng màu; PoC trọng số pHash 0.8 lấn át histogram 0.2 nên tránh 100% bẫy màu |
+| **other** | 19 | Acc: 10.5% (TP 0 / FN 17 / TN 2), F1: 0.000 | **Acc: 100.0% (TP 17 / FN 0 / TN 2), F1: 1.000** | 17 cặp near-dup đổi sáng và 2 cặp âm khác scene; PoC đạt độ chính xác tuyệt đối |
+| **Toàn bộ gold dev** | **47** | **P: 1.000, R: 0.353, F1: 0.522** (TP 12 / FN 22) | **P: 0.971, R: 1.000, F1: 0.986** (TP 34 / FP 1) | Đánh giá nội bộ trên 47 cặp dev do M2 gán nhãn |
 
 - Failure case 1 (ảnh/metadata + root cause): 【M6 — bắt buộc: gộp nhầm hai scene vì màu giống】
-- Failure case 2: 【M6 / M5 — ví dụ: leakage còn sót sau group split, hoặc 1 FP trên gold】
+- Failure case 2 (M5 — phân tích 1 FP trên gold dev và nguy cơ rò rỉ khi split):
+  - **1 FP duy nhất trên gold dev (`im_018` và `im_022`)**:
+    - *Metadata & Đặc trưng*: Cùng camera `cam_3`, chụp cách nhau 0.2 giây (lúc 08:39:00 và 08:39:00.200). Đặc trưng trích xuất: `d_phash = 2`, `d_hist = 0.0135`, `same_camera = 1`, `score = 0.9723 > 0.757` → PoC phân loại `pred_dup = 1`.
+    - *Ground Truth & Root Cause*: Nhãn gold là `0` (không trùng) vì người gán phát hiện xe màu xanh lá phía sau chạy nhanh hơn và đè lên vạch sơn trắng trên mặt đường. Do thời gian chụp cực ngắn (burst), toàn bộ bối cảnh không gian, góc camera và >95% diện tích ảnh giống hệt nhau; pHash (ảnh thu nhỏ $32 \times 32$ mức xám) cùng histogram màu không đủ độ phân giải không gian cục bộ để nhận diện sự dịch chuyển của một vật thể nhỏ ở hậu cảnh. Đây là giới hạn tự nhiên của perceptual hash cấp độ toàn khung hình (global descriptor).
+  - **Nguy cơ rò rỉ khi phân chia tập dữ liệu (Split Leakage)**:
+    - *Nếu chia split ngẫu nhiên theo ảnh độc lập (Baseline A)*: Các frame thuộc cùng một scene/burst bị phân tán ngẫu nhiên vào cả train và test, gây rò rỉ dữ liệu downstream nặng nề (mô hình học thuộc lòng góc máy và bối cảnh).
+    - *Nếu chia theo Complete-Linkage*: Thuật toán khống chế đường kính cụm chặt chẽ (tạo ra 47 nhóm, max 5 ảnh/nhóm), nhưng bẻ gãy các chuỗi near-dup gián tiếp, dẫn đến **30 cặp nghi trùng bị cắt ngang giữa train và test** (`residual_leak = 30`).
+    - *Giải pháp của PoC (M5)*: Áp dụng **Union-Find Grouping** kết hợp **Seeded Group-Aware Split** (`src/t05_grouping.py`). Đưa toàn bộ thành phần liên thông vào một phía của split, đồng thời bảo đảm phân bổ đủ 4 camera cho tập test (~32.5% test) với **0 cặp rò rỉ chéo (`residual_leak = 0`)** và giữ trọn 100% dữ liệu (`kept_share = 1.0`).
 - **Latency / compute:** PoC 1.85 s cho 120 ảnh / 7.140 cặp trên Intel64 Family 6 Model 154, Windows 11, Python 3.13.5, CPU-only.
 
 ## 07 · Human & decision
@@ -167,6 +186,8 @@ python -m pytest -q
 
 | URL | Ngày xem | 1–2 dòng ý nghĩa (không chép nguyên văn) |
 |---|---|---|
+| https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html | 2026-11-14 | Tài liệu SciPy phân cụm phân cấp (complete linkage) để kiểm soát đường kính cụm và chặn gộp dây chuyền. |
+| https://docs.voxel51.com/user_guide/brain.html#near-duplicates | 2026-11-14 | Hướng dẫn FiftyOne Brain về phát hiện near-duplicate và nguyên tắc chia train/test theo cụm/scene để tránh leakage. |
 | 【M3/M4 bổ sung】 | | |
 
 ---
