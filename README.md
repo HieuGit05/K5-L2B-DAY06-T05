@@ -1,3 +1,17 @@
+> **Bài nộp của Nhóm NhăngNhăng — T05 · Leakage & Near-Duplicate Guardian**
+>
+> | | |
+> |---|---|
+> | Repo | https://github.com/HieuGit05/K5-L2B-DAY06-T05 |
+> | Tag cuối cùng | `final-24h` (demo: `demo-180m`) |
+> | Report | [reports/group_report.md](reports/group_report.md) · [reports/metric_contract.md](reports/metric_contract.md) · [reports/team_contributions.csv](reports/team_contributions.csv) |
+> | Chạy PoC (1 lệnh) | `python -m src.main --config configs/lab.yaml --offline --seed 42` → `out/poc/suspect_pairs.csv` + `out/poc/split_manifest.csv` |
+> | Baseline | `python -m src.main --config configs/lab.yaml --output out/baseline --run-name baseline --pipeline src.t05_baseline --offline --seed 42` |
+> | Evaluate (cần GT của giảng viên) | `python -m src.evaluate --track t05 --pred out/poc/suspect_pairs.csv --run-name poc --out reports/metrics_poc.json` |
+> | Tests | `python -m pytest -q` |
+>
+> Phần bên dưới là README gốc của starter repo.
+
 # Day 06 · Data Lab · Field-to-Release PoC (AI20K · Data Track)
 
 Starter repo cho bài lab **Data Pipeline, Privacy & Production PoC**: 14 challenge (T01–T14), một contract chung.
