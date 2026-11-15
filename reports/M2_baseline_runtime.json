@@ -1,0 +1,103 @@
+{
+  "measurement_time": "2026-11-15T08:01:23+07:00",
+  "measurement_scope": "One recorded end-to-end src.main pipeline run per baseline; timed region excludes interpreter startup and initial src.main imports. CPU-only on M2 macOS; not comparable as a speedup against the existing Windows PoC run.",
+  "dataset": "fixtures/t05_near_duplicate",
+  "gold_sha256": "edd4b669b42b829b04cca127aa2326fc7036fe95a16dd600cd95f0dffd26c86d",
+  "official_quality_metrics_generated": false,
+  "runs": {
+    "random": {
+      "command": "python -m src.main --config configs/lab.yaml --output out/baseline_random --run-name baseline_random --pipeline src.t05_baseline --offline --seed 42",
+      "source_run_info": "out/baseline_random/run_info.json",
+      "run_info_sha256": "9b5942dfa25f8d26529fa53e98da971557d7067221101f1ba8e4fb8312613bad",
+      "run_info": {
+        "track": "t05",
+        "run_name": "baseline_random",
+        "status": 0,
+        "seed": 42,
+        "offline": true,
+        "input": "fixtures/t05_near_duplicate",
+        "output": "out/baseline_random",
+        "pipeline": "src.t05_baseline",
+        "config_hash": "98bfecb2cee2",
+        "git_sha": "d168cec",
+        "runtime_seconds": 0.0578,
+        "stats": {
+          "n_items": 120,
+          "baseline_method": "random",
+          "n_groups": 120
+        },
+        "machine": {
+          "python": "3.13.18",
+          "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+          "processor": "arm"
+        },
+        "output_check": {
+          "pred_file": "out/baseline_random/suspect_pairs.csv",
+          "exists": true,
+          "missing_columns": []
+        }
+      },
+      "baseline_summary": {
+        "method": "random",
+        "n_images": 120,
+        "n_groups": 120,
+        "n_predicted_duplicate_pairs": 0,
+        "test_fraction_target": 0.3,
+        "test_fraction_actual": 0.3,
+        "empty_partition": false,
+        "quality_evaluated": false,
+        "limitation": "Random split is per image; exact baseline detects identical bytes only. No GT read.",
+        "seed": 42,
+        "manifest_sha256": "0504f7ce30a2646cbdd4638176983973bd67c6f7d49cc6e87f72e9b125d25305"
+      },
+      "runtime_seconds_per_100_images": 0.048167
+    },
+    "exact": {
+      "command": "python -m src.main --config configs/lab.yaml --output out/baseline --run-name baseline --pipeline src.t05_baseline --offline --seed 42",
+      "source_run_info": "out/baseline/run_info.json",
+      "run_info_sha256": "53d628c04dfc23898ed440b521ef71f7b7ae3c78740ab9a328ffc46077f15640",
+      "run_info": {
+        "track": "t05",
+        "run_name": "baseline",
+        "status": 0,
+        "seed": 42,
+        "offline": true,
+        "input": "fixtures/t05_near_duplicate",
+        "output": "out/baseline",
+        "pipeline": "src.t05_baseline",
+        "config_hash": "c92726a2744b",
+        "git_sha": "d168cec",
+        "runtime_seconds": 0.0241,
+        "stats": {
+          "n_items": 120,
+          "baseline_method": "exact",
+          "n_groups": 100
+        },
+        "machine": {
+          "python": "3.13.18",
+          "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+          "processor": "arm"
+        },
+        "output_check": {
+          "pred_file": "out/baseline/suspect_pairs.csv",
+          "exists": true,
+          "missing_columns": []
+        }
+      },
+      "baseline_summary": {
+        "method": "exact",
+        "n_images": 120,
+        "n_groups": 100,
+        "n_predicted_duplicate_pairs": 20,
+        "test_fraction_target": 0.3,
+        "test_fraction_actual": 0.3,
+        "empty_partition": false,
+        "quality_evaluated": false,
+        "limitation": "Random split is per image; exact baseline detects identical bytes only. No GT read.",
+        "seed": 42,
+        "manifest_sha256": "0504f7ce30a2646cbdd4638176983973bd67c6f7d49cc6e87f72e9b125d25305"
+      },
+      "runtime_seconds_per_100_images": 0.020083
+    }
+  }
+}

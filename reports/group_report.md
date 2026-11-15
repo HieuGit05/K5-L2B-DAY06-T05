@@ -33,13 +33,13 @@
 
 | Split | N | Nguồn / link | License | Synthetic? |
 |---|---|---|---|---|
-| dev (gold tự gán) | 47 cặp ảnh (34 trùng / 13 không trùng) | `data/gold/gold_pairs.csv`, gán tay bởi Khải (M2); sha256 `edd4b669b42b829b04cca127aa2326fc7036fe95a16dd600cd95f0dffd26c86d` | 【M2 bổ sung theo `manifest.csv`】 | Nhãn do người gán; ảnh thuộc fixture |
-| eval / heldout | 120 ảnh = 7.140 cặp, GT ẩn `gt/gt_groups.csv` | `fixtures/t05_near_duplicate` — GT do giảng viên giữ, không có trong repo sinh viên | 【M2 bổ sung】 | 【M2 bổ sung】 |
+| dev (gold tự gán) | 47 cặp ảnh (34 trùng / 13 không trùng) | `data/gold/gold_pairs.csv`, gán tay bởi Khải (M2); sha256 `edd4b669b42b829b04cca127aa2326fc7036fe95a16dd600cd95f0dffd26c86d` | Ảnh: CC0-1.0 theo manifest; nhãn gold do M2 gán cho lab, chưa có tuyên bố giấy phép riêng | Nhãn do người gán; ảnh thuộc fixture |
+| eval / heldout | 120 ảnh = 7.140 cặp, GT ẩn `gt/gt_groups.csv` | `fixtures/t05_near_duplicate` — GT do giảng viên giữ, không có trong repo sinh viên | CC0-1.0 cho input synthetic theo manifest; GT ẩn không được phát hành trong repo | Có — ảnh tổng hợp của fixture, không dùng `data/real/` |
 
 - **Schema & class mapping:** 4 bảng chung trong `src/t05_schema.py` — `hashes` (`image_id, sha256, phash, dhash, ahash`), `pairs` (`img_a < img_b`, `d_phash, d_dhash, d_ahash, d_hist, dt_seconds, same_camera, score, pred_dup`), `groups` (`image_id, group_id`), `split_manifest` (`image_id, split ∈ {train, test, drop}`). Gold: `img_a, img_b, is_dup (0/1), note`.
 - **Seed: 42 · Cách chia split:** theo **nhóm** near-dup (union-find trên các cặp `pred_dup = 1`), không theo ảnh; cả nhóm vào một phía; mục tiêu 30 % test (`src/t05_grouping.py::make_split`, rng seed 42).
 - **`manifest.csv` verified (sha256): có** — `python -m tools.verify_manifests` → 14 manifests, 0 failing (kiểm cả trên bản clone mới với `core.autocrlf=true`, sau khi thêm `.gitattributes` để Git không đổi LF→CRLF trong `fixtures/` và `data/`). Pipeline chạy với `strict_provenance: true`.
-- **Gold set:** loại case — exact 16 · transformed 1 · burst 1 · color_trap 10 · other 19. Cặp `im_090/im_094` người gán không chắc nên loại khỏi file cuối. 【M2 bổ sung cách xem ảnh và tiêu chí gán】
+- **Gold set:** loại case — exact 16 · transformed 1 · burst 1 · color_trap 10 · other 19. Cặp `im_090/im_094` người gán không chắc nên loại khỏi file cuối. **Cách gán (M2):** Khải xem trực tiếp hai ảnh cạnh nhau trên trang HTML offline, chọn `is_dup`, loại case và ghi lý do quan sát kèm tên reviewer trong `note`. Nhãn `1` là cùng nội dung nguồn/near-duplicate dù crop, đổi sáng hoặc nén; nhãn `0` là khác nội dung, kể cả khi có màu nền giống nhau. Cùng camera hoặc gần thời gian chỉ gợi ý burst, không tự động là trùng. Ban đầu có 48 ứng viên; một cặp chưa chắc được để trống rồi bỏ khi xuất CSV. Các ứng viên được tìm bằng hash/histogram và thời gian/camera để người xem chọn, không dùng score làm nhãn và không suy nhãn từ tên file hay GT. File cuối được kiểm tra đúng schema, `img_a < img_b`, không lặp cặp, nhãn 0/1 và ghi chú đầy đủ; các nhãn/ghi chú người gán được giữ nguyên. License ảnh được chép từ cột `license` của `fixtures/t05_near_duplicate/manifest.csv` (`CC0-1.0 (synthetic, generated for AI20K Day06)`); nguồn ghi trong manifest là `synthetic:tools/make_fixtures.py (seed 42)`. Nhãn gold là dữ liệu người gán cho bài lab, không mặc định có cùng giấy phép với ảnh.
 - **Dữ liệu thật dùng (nếu có):** không dùng `data/real/`.
 
 ## 03 · Research & design
@@ -87,7 +87,9 @@ images.csv + manifest.csv ──(01 load: verify sha256)──▶ 120 ảnh
 | Primary trên gold dev (47 cặp, nội bộ) | 【M6 chạy gold_check】 | 0.986 (TP 34 / FP 1 / FN 0; P 0.971, R 1.000) | điểm dev, ngưỡng đã chọn trên chính tập này |
 | Hard-slice: color_trap trên gold dev | 【M6 bổ sung】 | 【M6 bổ sung】 | N = 10 cặp |
 | Review@B / miss / FP | — | 【sau review M6】 | B = 20 |
-| Runtime / 100 items | 【M2: `out/baseline/run_info.json`】 | 1.85 s / 120 ảnh (≈ 1.5 s / 100 ảnh) | CPU Intel64 Family 6 Model 154, Windows 11, Python 3.13.5 |
+| Runtime / 100 items | 0.0241 s / 120 ảnh (≈ 0.0201 s / 100 ảnh); máy M2 macOS ARM64, xem ghi chú bên dưới | 1.85 s / 120 ảnh (≈ 1.5 s / 100 ảnh) | CPU Intel64 Family 6 Model 154, Windows 11, Python 3.13.5 |
+
+**Runtime bổ sung của M2 (đo ngày 15/11/2026, code `d168cec`):** lấy `runtime_seconds` và `stats.n_items` từ `out/baseline/run_info.json` (exact) và `out/baseline_random/run_info.json` (random); giữ nguyên bản ghi và kết quả quy đổi trong [`M2_baseline_runtime.json`](M2_baseline_runtime.json). Baseline B exact: 0.0241 s / 120 ảnh, quy đổi `runtime_seconds × 100 / n_items` = 0.020083 s / 100 ảnh. Baseline A random: 0.0578 s / 120 ảnh, quy đổi 0.048167 s / 100 ảnh. Cả hai là một lần chạy CPU-only, seed 42, trên macOS 26.5.2 ARM64, Python 3.13.18. Timer của `src.main` đo vùng import/gọi pipeline, không gồm khởi động interpreter và các import ban đầu của runner; chưa phải phân phối benchmark nhiều lần. Cột PoC vẫn là số đo Windows của M1, vì vậy không suy ra speedup trực tiếp giữa hai cột khác máy.
 
 ## 05 · Evaluation protocol
 
@@ -164,10 +166,11 @@ python -m pytest -q
 
 ## 09 · Limitations & ethics
 
-- Rủi ro pháp lý / PII / license: 【cả nhóm bổ sung】
+- Rủi ro pháp lý / PII / license: **Phần M2:** chỉ dùng ảnh synthetic đã phát trong fixture; README mô tả không có người/biển số thật, manifest khai báo CC0-1.0. Nhãn gold được người dùng tự gán; không suy diễn giấy phép dữ liệu thật hoặc GT ẩn từ giấy phép input. Kết quả này chưa kiểm chứng trên dữ liệu thực có PII. 【cả nhóm bổ sung】
 - **Điều chưa biết:** gold dev chỉ 47 cặp và **đã dùng để chọn ngưỡng** → F1 0.986 là điểm dev, có thể lạc quan; fixture không có heldout riêng cho sinh viên. Slice `transformed` và `burst` mỗi loại chỉ có 1 cặp trong gold → gần như chưa kiểm được. Nếu scale 10× (1.200 ảnh ≈ 720.000 cặp) vẫn so toàn bộ được nhưng chậm hơn ~100×; khi đó cần LSH/ANN. 【cả nhóm bổ sung】
+- **Giới hạn M2:** bộ cặp được chọn có chủ đích theo các tín hiệu giống nhau nên không phải mẫu ngẫu nhiên đại diện cho toàn bộ cặp ảnh; một người gán, chưa đo đồng thuận giữa người gán và chưa có holdout độc lập của M2. Exact SHA-256 chỉ phát hiện trùng từng byte, còn random split theo từng ảnh là đối chứng có nguy cơ leakage. Số cặp dự đoán/cắt ngang split chỉ là kiểm tra nội bộ khi chưa có GT ẩn; không thay thế F1 chính thức.
 - Không tuyên bố "đạt GDPR / luật Việt Nam" từ checklist tự động; giả định cần DPO/legal xác nhận: xem mục 01.
-- Kế hoạch cải tiến: 【cả nhóm bổ sung】
+- Kế hoạch cải tiến: **Phần M2:** bổ sung gold gán tay cho biến đổi/crop/nén và burst, có người gán thứ hai để đối chiếu bất đồng; chốt protocol đánh giá độc lập theo nhóm ảnh/scene trước khi dùng nhãn giữ kín; đo baseline và PoC trên cùng máy/cùng phạm vi timer nếu muốn so tốc độ. Không thay nhãn, ngưỡng hoặc số liệu hiện có để cải thiện điểm sau khi xem evaluation. 【cả nhóm bổ sung】
 
 ## 10 · Team contribution
 
