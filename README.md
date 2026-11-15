@@ -3,7 +3,7 @@
 > | | |
 > |---|---|
 > | Repo | https://github.com/HieuGit05/K5-L2B-DAY06-T05 |
-> | Tag cuối cùng | `final-24h` (demo: `demo-180m`) |
+> | Tag cuối cùng | `final-24h` (`demo-180m` gắn cùng commit, muộn — xem mục 00 của report) |
 > | Report | [reports/group_report.md](reports/group_report.md) · [reports/metric_contract.md](reports/metric_contract.md) · [reports/team_contributions.csv](reports/team_contributions.csv) |
 > | Chạy PoC (1 lệnh) | `python -m src.main --config configs/lab.yaml --offline --seed 42` → `out/poc/suspect_pairs.csv` + `out/poc/split_manifest.csv` |
 > | Baseline | `python -m src.main --config configs/lab.yaml --output out/baseline --run-name baseline --pipeline src.t05_baseline --offline --seed 42` |

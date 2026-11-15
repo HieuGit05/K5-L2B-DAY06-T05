@@ -12,9 +12,9 @@
 | Challenge | T05 · Leakage & Near-Duplicate Guardian |
 | Thành viên (6) + vai trò | 1. Đặng Trung Hiếu — HieuGit05 (Lead / Integrator) · 2. Lê Quang Khải — kasdie (Baseline + gold set) · 3. Hoang Quang Truong (Detector A — hash) · 4. Dương Quốc Huy — dqhuy11 (Detector B — feature + score + ablation) · 5. Nguyễn Nhân Thành Long — longnguyen3204 (Grouping + leak-free split) · 6. Hoàng Kim Chi — Cheese1501 (Human review + failure analysis) |
 | Git URL | https://github.com/HieuGit05/K5-L2B-DAY06-T05 |
-| Tag `demo-180m` (commit) | 【M1 điền sau khi gắn tag】 |
-| Tag `final-24h` (commit) | 【M1 điền sau khi gắn tag】 |
-| Deadline (giờ VN) | 12:00 ngày 15/11/2026 |
+| Tag `demo-180m` (commit) | Cùng commit với `final-24h` (`git rev-list -n 1 demo-180m`). **Gắn muộn** ngày 15/11/2026: tại mốc 180 phút nhóm chưa chạy được end-to-end (main mới có module của M3), nên **không claim bonus demo-180m** |
+| Tag `final-24h` (commit) | Commit cuối cùng của `main` chứa dòng này (`git rev-list -n 1 final-24h`), gắn ~16:05 ngày 15/11/2026 |
+| Deadline (giờ VN) | 12:00 ngày 15/11/2026 — **nộp muộn khoảng 4 giờ.** Phần làm sau 12:00: code + review của M6 (`2e10b20`, `afd1070`), sửa pipeline gom nhóm sau review (`0886f6c`), cập nhật report. Commit cuối trước hạn là `b8a53a3` (11:34) |
 | Người thuyết trình | Đặng Trung Hiếu (M1) |
 
 ## 01 · Problem statement
@@ -226,8 +226,8 @@ python -m pytest -q
 
 **Bảng 3 · Checklist chốt khi nộp**
 
-- [ ] Link repo và tag cuối cùng trong README; input mẫu không chứa PII thật.
+- [x] Link repo và tag cuối cùng trong README; input mẫu không chứa PII thật (fixture synthetic CC0-1.0).
 - [x] Đúng 1 lệnh run, 1 lệnh evaluate, 1 lệnh tests; không cần download khi chạy.
-- [ ] Có baseline/PoC metrics, ≥1 failure case, reviewer evidence, decision log.
-- [ ] Có license/source provenance, data splits, seed, offline environment, GT/eval N.
-- [ ] Mỗi thành viên có ≥1 commit thực chất và được nêu minh bạch trong bảng trên.
+- [ ] Có baseline/PoC metrics, ≥1 failure case, reviewer evidence, decision log. — Có 3 failure case, reviewer evidence (`demo/`, `reports/review_queue.csv`), decision log (`reports/decision_log.csv`), metric nội bộ trên gold dev; **thiếu `metrics_*.json` chính thức** vì repo sinh viên không có GT (giảng viên chấm).
+- [x] Có license/source provenance, data splits, seed, offline environment, GT/eval N.
+- [x] Mỗi thành viên có ≥1 commit thực chất và được nêu minh bạch trong bảng trên.
