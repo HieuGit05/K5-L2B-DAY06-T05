@@ -47,7 +47,8 @@
 - 2–3 references (URL + ngày xem) và **vì sao** chọn kỹ thuật:
   - **Union-Find (Disjoint-Set Forest)**: Cormen et al. (2009), *Introduction to Algorithms*. Khai thác tính đóng bắc cầu (transitive closure) của quan hệ tương đương: nếu $(A, B)$ và $(B, C)$ là near-dup thì $\{A, B, C\}$ bắt buộc phải vào chung một nhóm để triệt tiêu hoàn toàn nguy cơ rò rỉ chéo khi phân chia train/test.
   - **Complete-Linkage Clustering**: Defays (1977); SciPy documentation (`scipy.cluster.hierarchy.linkage`, method='complete') — https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html (xem 2026-11-14). Đo khoảng cách xa nhất giữa các cụm $D(u, v) = \max \text{dist}(u, v) \le 0.5$. Chọn làm phương pháp đối chứng nhằm khống chế đường kính cụm, kiểm chứng và ngăn ngừa hiện tượng "gộp dây chuyền" (chain merging).
-  - 【M3 + M4 bổ sung — pHash/dHash/aHash, Bhattacharyya histogram】
+  - 【M3 bổ sung — pHash/dHash/aHash】
+  - **Detector B — histogram màu (M4):** khoảng cách **Bhattacharyya (dạng Hellinger)** `d = sqrt(1 − Σ sqrt(h_a·h_b))` trên `image_ops.color_histogram` (3 kênh × 16 bin, chuẩn hoá L1). Chọn Bhattacharyya thay vì L1 vì giá trị nằm sẵn trong [0, 1] nên ghép thẳng được vào score, và ít nhạy hơn với bin có tần suất nhỏ (xem [11]). Thời gian (`dt_seconds`) và camera (`same_camera`) chỉ lưu làm feature cho review/grouping, **không đưa vào score**: trong gold, cặp trùng có `dt` từ 0,2 s đến 5 ngày, còn bẫy màu có cặp chỉ cách 39 phút → thời gian không tách được hai nhóm.
 - **Sơ đồ data flow:**
 
 ```
@@ -68,6 +69,7 @@ images.csv + manifest.csv ──(01 load: verify sha256)──▶ 120 ảnh
   - *Gom nhóm & chia split (Union-Find vs Complete-Linkage — M5)*:
     - **Union-Find (PoC chọn)**: Đảm bảo nguyên tắc bảo toàn nhóm tuyệt đối — toàn bộ thành phần liên thông đi về cùng một phía của split. Kết quả thực nghiệm: **0 cặp nghi trùng cắt ngang train/test (`residual_leak_pairs = 0`)**, giữ 100% dữ liệu. Đánh đổi: Dễ bị gộp dây chuyền (chain merging) nếu có cặp dương tính giả làm cầu nối (trên 120 ảnh gom thành 31 nhóm, nhóm lớn nhất có 11 ảnh).
     - **Complete-Linkage**: Ép mọi cặp trong cụm phải có khoảng cách $\le 0.5$ (gần như clique), giúp cụm rất tinh khiết (gom thành 47 nhóm, nhóm lớn nhất chỉ 5 ảnh). Đánh đổi: Bẻ gãy các chuỗi liên kết yếu, dẫn đến **30 cặp nghi trùng bị cắt đôi sang hai phía train/test (`residual_leak_pairs = 30`)**, vi phạm yêu cầu zero-leakage trừ phi chấp nhận drop các cụm biên. Vì mục tiêu hàng đầu của T05 là chống rò rỉ dữ liệu, nhóm chọn Union-Find cho pipeline chính thức.
+  - **M4 — luật đơn giản thay vì logistic regression:** gold chỉ 47 cặp (13 âm) → fit 2–3 hệ số dễ overfit; luật tuyến tính 1 trọng số + 1 ngưỡng đủ đạt F1 0.986 trên gold và dễ giải thích khi review. **Rủi ro chấp nhận:** cặp `im_018/im_022` (burst, khác thời điểm, `d_phash = 2`, `d_hist = 0.013`) không feature nào tách được → 1 FP cố định, chuyển cho human review. Bug đã sửa: `captured_at` lẫn 2 định dạng (`08:00:00` và `08:00:00.200000`) làm `dt_seconds` bị NaN → parse bằng `format="ISO8601"`, hiện 7.140/7.140 cặp có `dt_seconds`.
 
 ## 04 · Baseline vs PoC
 
@@ -104,8 +106,15 @@ images.csv + manifest.csv ──(01 load: verify sha256)──▶ 120 ảnh
 | combined_w0.5 | 0.5 | 0.5 | 31 | 1 | 3 | 0.9688 | 0.9118 | 0.9394 |
 | combined_w0.8 (chọn) | 0.8 | 0.2 | 34 | 1 | 0 | 0.9714 | 1.0 | 0.9855 |
 
-  `hist_only` có 13 FP — đúng bằng số cặp không trùng trong gold, minh hoạ bẫy màu. 【M4 bổ sung: vì sao chọn 0.8 thay vì phash_only khi F1 bằng nhau】
-- **Độ bất định (N nhỏ):** gold dev chỉ 34 cặp dương → Wilson CI 95 % cho recall 34/34 ≈ [0.90, 1.00], precision 34/35 ≈ [0.85, 0.99] (`src/metrics/estimation.py::wilson_ci`). 【M4 xác nhận lại bằng script】
+  `hist_only` có 13 FP — đúng bằng số cặp không trùng trong gold, minh hoạ bẫy màu.
+
+  **Vì sao chọn w = 0.8 thay vì `phash_only` khi F1 bằng nhau (M4):** trên gold, `phash_only` và mọi `combined` w = 0.6–0.9 hoà nhau (F1 0.9855, cùng precision) → quy tắc "hoà thì precision cao hơn" trong metric contract không phân xử được; đây là **lựa chọn thiết kế, không phải do gold quyết định**. Lý do:
+  1. **Trên toàn bộ 7.140 cặp hai phương án khác nhau:** `phash_only` gắn 260 cặp `pred_dup`, `combined_w0.8` gắn 236. Chênh lệch là 26 cặp chỉ pHash bắt (đều có `d_phash` 10–16, `d_hist` 0.24–0.87, 25/26 cách nhau ≥ 1 ngày, 16/26 khác camera — ví dụ `im_009` với `im_114/115/116/118`) và 2 cặp chỉ combined bắt. Histogram đóng vai trò **tín hiệu thứ hai chặn các cặp cấu trúc hơi giống nhưng màu rất khác**; với union-find (M5), mỗi cặp sai có thể kéo cả hai nhóm dính vào nhau, nên bớt cặp sai ở vùng giữa quan trọng hơn ở bước so cặp đơn lẻ.
+  2. **Không dùng histogram nhiều hơn:** w = 0.5 đã mất 3 cặp trùng thật (cặp đổi sáng có `d_hist` 0.55–0.60, như `im_000/im_003`, `im_018/im_021`); w = 0.6 chỉ còn khe 0.052 giữa cặp trùng thấp nhất và bẫy màu cao nhất.
+  3. **0.8 là giá trị mặc định đặt trước khi chạy gold**, sau đó gold xác nhận nằm trong vùng hoà 0.6–0.9 nên giữ nguyên, không dò tiếp.
+
+  **Điều phải nói thật:** trên gold, `phash_only` có khe rộng hơn (cặp trùng thấp nhất 0.938 vs bẫy màu cao nhất 0.562, khe 0.375) so với `combined_w0.8` (0.879 vs 0.635, khe 0.245) — tức là histogram **không** giúp tách bẫy màu trong gold, chỉ là vẫn đủ an toàn. Gold không có cặp nào ở vùng `d_phash` 5–27, nên lợi ích ở mục 1 **chưa kiểm chứng được** bằng nhãn; cần GT chính thức hoặc gán thêm gold ở vùng này.
+- **Độ bất định (N nhỏ):** gold dev chỉ 34 cặp dương → Wilson CI 95 % cho recall 34/34 ≈ [0.90, 1.00], precision 34/35 ≈ [0.85, 0.99] (`src/metrics/estimation.py::wilson_ci`). ✅ M4 đã chạy lại `wilson_ci(34, 34)` = [0.898, 1.000] và `wilson_ci(34, 35)` = [0.855, 0.995] — khớp số trên.
 - **Lệnh evaluate chính xác (giảng viên chạy):** `python -m src.evaluate --track t05 --pred out/poc/suspect_pairs.csv --run-name poc --out reports/metrics_poc.json`
 
 ## 06 · Result slices
@@ -191,7 +200,10 @@ python -m pytest -q
 |---|---|---|
 | https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html | 2026-11-14 | Tài liệu SciPy phân cụm phân cấp (complete linkage) để kiểm soát đường kính cụm và chặn gộp dây chuyền. |
 | https://docs.voxel51.com/user_guide/brain.html#near-duplicates | 2026-11-14 | Hướng dẫn FiftyOne Brain về phát hiện near-duplicate và nguyên tắc chia train/test theo cụm/scene để tránh leakage. |
-| 【M3/M4 bổ sung】 | | |
+| 【M3 bổ sung — pHash/dHash】 | | |
+| https://en.wikipedia.org/wiki/Bhattacharyya_distance | 2026-11-15 | Định nghĩa hệ số và khoảng cách Bhattacharyya giữa hai phân phối; dạng Hellinger `sqrt(1 − BC)` nằm trong [0, 1] — cơ sở cho `hist_distance` (M4). |
+| https://docs.opencv.org/4.x/d8/dc8/tutorial_histogram_comparison.html | 2026-11-15 | So sánh các thước đo histogram (correlation, chi-square, intersection, Bhattacharyya); Bhattacharyya là lựa chọn phổ biến cho so khớp histogram màu (M4). |
+| https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval#Wilson_score_interval | 2026-11-15 | Khoảng Wilson cho tỉ lệ khi N nhỏ, vẫn dùng được khi k = n (recall 34/34) — dùng cho CI ở mục 05 (M4). |
 
 ---
 
